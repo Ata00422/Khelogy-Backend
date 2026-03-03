@@ -9,24 +9,18 @@ if (!mongoUrl) {
   throw new Error("MongoDb_Url environment variable is not defined!");
 }
 
-let cached = global.mongoose;
-
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+let isConnected = false;
 
 async function connectToMongoDb() {
-  if (cached.conn) return cached.conn;
+  if (isConnected) return;
 
-  if (!cached.promise) {
-    cached.promise = mongoose.connect(mongoUrl, {
-      maxPoolSize: 1,
-      serverSelectionTimeoutMS: 5000
-    });
-  }
+  await mongoose.connect(mongoUrl, {
+    maxPoolSize: 1, // keep small for Vercel
+    serverSelectionTimeoutMS: 5000
+  });
 
-  cached.conn = await cached.promise;
-  return cached.conn;
+  isConnected = true;
+  console.log("MongoDB Connected");
 }
 
 export default connectToMongoDb;
