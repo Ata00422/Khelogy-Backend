@@ -14,6 +14,7 @@ router.post("/addFavourites", errorHandling(async (req, res) => {
     res.json(newRecordAdd)
 }))
 
+
 router.get("/allFavourites", errorHandling(async (req, res) => {
     const allRecords = await Favourite.find().populate("productId").populate("userId")
     res.json(allRecords)
