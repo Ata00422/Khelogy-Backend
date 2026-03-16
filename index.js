@@ -9,6 +9,7 @@ import UserController from "./Controllers/UserController.js";
 import trackController from "./Controllers/TrackRecordController.js";
 import favController from "./Controllers/FavouriteController.js";
 import blogsController from "./Controllers/BlogsController.js";
+import tagsController from "./Controllers/TagsController.js";
 
 const app = express();
 
@@ -27,5 +28,10 @@ app.use("/api/user", UserController);
 app.use("/api/track", trackController);
 app.use("/api/fav", favController);
 app.use("/api/blogs", blogsController);
+app.use("/api/tags", tagsController);
+
+app.listen(8000, () => {
+  console.log('Server is running on port 8000');
+});
 
 export default app;

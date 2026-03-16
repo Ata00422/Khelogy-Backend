@@ -33,7 +33,8 @@ router.post(
             gameStatus,
             gameIndex,
             metaTitle,
-            metaDescription
+            metaDescription,
+            gameTags
         } = req.body;
 
         /* ---------------- PARSE LOCALIZED FIELDS ---------------- */
@@ -139,6 +140,7 @@ router.post(
             featureGame,
             featureList,
             controls,
+            gameTags,
             faqs: safeFaqs,
             thumbnail: thumbnail_url,
             video: video_url,
@@ -172,7 +174,7 @@ router.get("/uploadedd-games", errorHandling(async (req, res) => {
 
     const uploadedGames = await Products.find()
         .populate("categories", "category ancestors catUrl")
-        .populate("userId");
+        .populate("userId").populate("gameTags");
 
     // Sort categories inside each game
     const formattedGames = uploadedGames.map(game => {
@@ -197,7 +199,7 @@ router.get(
             status: { $nin: ["Pending", "Rejected"] },
         })
             .populate("categoryId")
-            .populate("userId")
+            .populate("userId").populate("gameTags")
             .sort({ views: -1 }) // Sort by highest views first
             .limit(20); // You can adjust limit as needed
 
@@ -211,7 +213,7 @@ router.get(
             status: { $nin: ["Pending", "Rejected"] },
         })
             .populate("categoryId")
-            .populate("userId")
+            .populate("userId").populate("gameTags")
             .sort({ likes: -1 }) // Sort by highest views first
             .limit(20); // You can adjust limit as needed
 
@@ -286,7 +288,7 @@ router.get("/unique-game-urls", errorHandling(async (req, res) => {
 }));
 
 router.get("/gameById/:id", errorHandling(async (req, res) => {
-    const game = await Products.findById(req.params.id).populate("categories", "category ancestors catUrl");
+    const game = await Products.findById(req.params.id).populate("categories", "category ancestors catUrl").populate("gameTags");
     if (!game) {
         return res.status(404).json({ message: "Game not found" });
     }
@@ -299,7 +301,7 @@ router.get("/gameById/:id", errorHandling(async (req, res) => {
 }));
 
 router.get("/gameByTitle/:title", errorHandling(async (req, res) => {
-    const GetGame = await Products.findOne({ title: req.params.title }).populate("categoryId");
+    const GetGame = await Products.findOne({ title: req.params.title }).populate("categoryId").populate("gameTags");
     if (!GetGame) {
         return res.status(404).json({ message: "Game not found" });
     }
@@ -355,6 +357,7 @@ router.put(
             recommended,
             featureList,
             controls,
+            gameTags,
             faqs,
             metaTitle,
             metaDescription,
@@ -400,6 +403,9 @@ router.put(
             allCategories = [...new Set(allCategories)];
         }
 
+        const parsedGameTags =
+            typeof gameTags === "string" ? JSON.parse(gameTags) : gameTags;
+
         // Build update object
         let updatedData = {};
         if (parsedTitle) updatedData.title = parsedTitle;
@@ -407,6 +413,9 @@ router.put(
         if (parsedDescription) updatedData.description = parsedDescription;
         if (keywordsArray.length > 0) updatedData.gameKeywords = keywordsArray;
         if (allCategories.length > 0) updatedData.categories = allCategories;
+        if (parsedGameTags && parsedGameTags.length > 0) {
+            updatedData.gameTags = parsedGameTags;
+        }
         if (gameUrl) updatedData.gameUrl = gameUrl;
         if (howToPlay) updatedData.howToPlay = howToPlay;
         if (whoCreated) updatedData.whoCreated = whoCreated;
