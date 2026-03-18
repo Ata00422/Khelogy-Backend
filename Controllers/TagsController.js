@@ -10,6 +10,14 @@ router.post("/addTags", errorHandling(async (req, res) => {
         return res.status(400).json({ message: "Please add tag first" });
     }
 
+    const existingTags = await Tags.findOne({
+        tags: { $regex: new RegExp(`^${tags.trim()}$`, "i") }
+    });
+
+    if (existingTags) {
+        return res.status(400).json({ message: "Tags already exists" });
+    }
+
     const newTag = await Tags.create({ tags });
 
     res.status(201).json(newTag);
@@ -48,7 +56,7 @@ router.put(
         let updateTagData = {};
         // ✅ Parse faqs
 
-        
+
         if (tags) updateTagData.tags = tags;
 
         const updatedTag = await Tags.findByIdAndUpdate(

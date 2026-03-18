@@ -10,6 +10,14 @@ router.post("/addCategory", upload.single("logo"), errorHandling(async (req, res
 
     if (!category) return res.status(400).json({ message: "Please select at least category" })
 
+    const existingCategory = await Category.findOne({
+        category: { $regex: new RegExp(`^${category.trim()}$`, "i") }
+    });
+
+    if (existingCategory) {
+        return res.status(400).json({ message: "Category already exists" });
+    }
+
     // ✅ Parse faqs
     const faqs = req.body.faqs ? JSON.parse(req.body.faqs) : [];
 
