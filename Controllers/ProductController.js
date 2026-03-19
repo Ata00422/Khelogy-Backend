@@ -66,22 +66,14 @@ router.post(
         // Handle categories (simple check for not null/undefined)
         let allCategories = [];
         if (categoryIds) {
-            const parsedIds = typeof categoryIds === "string" ? JSON.parse(categoryIds) : categoryIds;
+            const parsedIds =
+                typeof categoryIds === "string"
+                    ? JSON.parse(categoryIds)
+                    : categoryIds;
+
             if (Array.isArray(parsedIds)) {
-                for (let id of parsedIds) {
-                    if (id) { // simple non-empty check
-                        const category = await Category.findById(id);
-                        if (category) {
-                            allCategories.push(id); // just store the id string
-                            if (category.ancestors?.length > 0) {
-                                allCategories.push(...category.ancestors);
-                            }
-                        }
-                    }
-                }
+                allCategories = parsedIds.filter(id => id);
             }
-            // remove duplicates
-            allCategories = [...new Set(allCategories)];
         }
 
         /* ---------------- FAQ VALIDATION ---------------- */
@@ -384,23 +376,16 @@ router.put(
 
         // Handle categories (simple check for not null/undefined)
         let allCategories = [];
+
         if (categoryIds) {
-            const parsedIds = typeof categoryIds === "string" ? JSON.parse(categoryIds) : categoryIds;
+            const parsedIds =
+                typeof categoryIds === "string"
+                    ? JSON.parse(categoryIds)
+                    : categoryIds;
+
             if (Array.isArray(parsedIds)) {
-                for (let id of parsedIds) {
-                    if (id) { // simple non-empty check
-                        const category = await Category.findById(id);
-                        if (category) {
-                            allCategories.push(id); // just store the id string
-                            if (category.ancestors?.length > 0) {
-                                allCategories.push(...category.ancestors);
-                            }
-                        }
-                    }
-                }
+                allCategories = parsedIds.filter(id => id); // only selected
             }
-            // remove duplicates
-            allCategories = [...new Set(allCategories)];
         }
 
         const parsedGameTags =
