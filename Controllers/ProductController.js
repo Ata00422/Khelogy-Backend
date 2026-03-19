@@ -151,24 +151,59 @@ router.post(
     })
 );
 
+let featuredCache = null;
+let featuredCacheTime = 0;
+const CACHEE_TTL = 1000 * 60 * 10; // 10 min
+
 router.get(
     "/featured-games",
     errorHandling(async (req, res) => {
+
+        const now = Date.now();
+
+        // ✅ instant return
+        if (featuredCache && (now - featuredCacheTime < CACHEE_TTL)) {
+            console.log("⚡ Featured from cache");
+            return res.json(featuredCache);
+        }
+
+        console.log("🐢 Fetching featured from DB");
+
         const featuredGames = await Products.find(
             { featureGame: "Yes" },
             "title thumbnail"
         ).lean();
+
+        // ✅ store cache
+        featuredCache = featuredGames;
+        featuredCacheTime = now;
+
+        res.set("Cache-Control", "public, max-age=300, s-maxage=600");
         res.status(200).json(featuredGames);
     })
 );
 
+let gamesCache = null;
+let cacheTime = 0;
+const E = 1000 * 60 * 10; // 10 minutes
+
 router.get("/uploadedd-games", errorHandling(async (req, res) => {
+
+    const now = Date.now();
+
+    // ✅ Serve from cache
+    if (gamesCache && (now - cacheTime < E)) {
+        console.log("⚡ Serving ALL games from cache");
+        return res.json(gamesCache);
+    }
+
+    console.log("🐢 Fetching ALL games from DB");
 
     const uploadedGames = await Products.find()
         .populate("categories", "category ancestors catUrl")
-        .populate("userId").populate("gameTags");
+        .populate("userId")
+        .populate("gameTags");
 
-    // Sort categories inside each game
     const formattedGames = uploadedGames.map(game => {
         const sortedCategories = [...game.categories].sort(
             (a, b) => a.ancestors.length - b.ancestors.length
@@ -180,7 +215,12 @@ router.get("/uploadedd-games", errorHandling(async (req, res) => {
         };
     });
 
-    res.status(200).json(formattedGames);
+    // ✅ Store in cache
+    gamesCache = formattedGames;
+    cacheTime = now;
+
+    res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+    res.json(formattedGames);
 }));
 // 📁 routes/gameRoutes.js
 
@@ -292,13 +332,27 @@ router.get("/gameById/:id", errorHandling(async (req, res) => {
     res.json(game);
 }));
 
-router.get("/gameByTitle/:title", errorHandling(async (req, res) => {
-    const GetGame = await Products.findOne({ title: req.params.title }).populate("categoryId").populate("gameTags");
-    if (!GetGame) {
+const cache = {};
+
+router.get("/gameByTitle/:title", async (req, res) => {
+    const title = req.params.title;
+
+    // ✅ return from cache
+    if (cache[title]) {
+        return res.json(cache[title]);
+    }
+
+    const game = await Products.findOne({ "title.en": title }).populate("gameTags");
+
+    if (!game) {
         return res.status(404).json({ message: "Game not found" });
     }
-    res.json(GetGame);
-}));
+
+    // ✅ store in cache
+    cache[title] = game;
+
+    res.json(game);
+});
 
 router.get("/home-data", async (req, res) => {
     try {
