@@ -306,6 +306,9 @@ router.get("/gameByTitle/:title", async (req, res) => {
         return res.status(404).json({ message: "Game not found" });
     }
 
+    // ✅ store in cache
+    cache[title] = game;
+
     res.json(game);
 });
 
