@@ -162,8 +162,6 @@ router.get(
             "title thumbnail"
         ).lean();
 
-        // ✅ store cache
-        featuredCache = featuredGames;
         res.status(200).json(featuredGames);
     })
 );
@@ -185,6 +183,27 @@ router.get("/uploadedd-games", errorHandling(async (req, res) => {
             categories: sortedCategories
         };
     });
+    router.get("/uploadedd-games", errorHandling(async (req, res) => {
+        const uploadedGames = await Products.find()
+            .populate("categories", "category ancestors catUrl")
+            .populate("userId")
+            .populate("gameTags");
+
+        const formattedGames = uploadedGames.map(game => {
+            const sortedCategories = [...game.categories].sort(
+                (a, b) => a.ancestors.length - b.ancestors.length
+            );
+
+            return {
+                ...game.toObject(),
+                categories: sortedCategories
+            };
+        });
+
+        // ✅ Add caching header for Cloudflare edge
+        res.set("Cache-Control", "public, max-age=86400, s-maxage=86400, stale-while-revalidate=3600");
+        res.json(formattedGames);
+    }));
 
     res.json(formattedGames);
 }));
