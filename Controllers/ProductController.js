@@ -212,7 +212,10 @@ router.get("/uploadedd-games", errorHandling(async (req, res) => {
 
     gamesCache = formattedGames;
 
-    res.set("Cache-Control", "public, max-age=86400, s-maxage=86400, immutable");
+    res.setHeader(
+        "Cache-Control",
+        "public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400"
+    );
     res.json(formattedGames);
 }));
 // 📁 routes/gameRoutes.js
