@@ -183,16 +183,7 @@ router.get(
     })
 );
 
-let gamesCache = null;
-
 router.get("/uploadedd-games", errorHandling(async (req, res) => {
-
-    if (gamesCache) {
-        console.log("⚡ Serving ALL games from cache");
-        return res.json(gamesCache);
-    }
-
-    console.log("🐢 Fetching ALL games from DB");
 
     const uploadedGames = await Products.find()
         .populate("categories", "category ancestors catUrl")
@@ -210,12 +201,6 @@ router.get("/uploadedd-games", errorHandling(async (req, res) => {
         };
     });
 
-    gamesCache = formattedGames;
-
-    res.setHeader(
-        "Cache-Control",
-        "public, max-age=86400, s-maxage=86400, stale-while-revalidate=86400"
-    );
     res.json(formattedGames);
 }));
 // 📁 routes/gameRoutes.js
