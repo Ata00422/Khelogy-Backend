@@ -184,15 +184,10 @@ router.get(
 );
 
 let gamesCache = null;
-let cacheTime = 0;
-const E = 1000 * 60 * 10; // 10 minutes
 
 router.get("/uploadedd-games", errorHandling(async (req, res) => {
 
-    const now = Date.now();
-
-    // ✅ Serve from cache
-    if (gamesCache && (now - cacheTime < E)) {
+    if (gamesCache) {
         console.log("⚡ Serving ALL games from cache");
         return res.json(gamesCache);
     }
@@ -215,11 +210,9 @@ router.get("/uploadedd-games", errorHandling(async (req, res) => {
         };
     });
 
-    // ✅ Store in cache
     gamesCache = formattedGames;
-    cacheTime = now;
 
-    res.set("Cache-Control", "public, max-age=300, s-maxage=600");
+    res.set("Cache-Control", "public, max-age=86400, s-maxage=86400, immutable");
     res.json(formattedGames);
 }));
 // 📁 routes/gameRoutes.js

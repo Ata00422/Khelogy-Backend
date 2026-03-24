@@ -12,7 +12,7 @@ import blogsController from "./Controllers/BlogsController.js";
 import tagsController from "./Controllers/TagsController.js";
 
 const app = express();
-
+app.set("etag", false);
 app.use(cors({ origin: "*" }));
 app.use(express.json());
 
