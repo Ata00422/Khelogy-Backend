@@ -151,23 +151,11 @@ router.post(
     })
 );
 
-let featuredCache = null;
-let featuredCacheTime = 0;
-const CACHEE_TTL = 1000 * 60 * 10; // 10 min
-
 router.get(
     "/featured-games",
     errorHandling(async (req, res) => {
 
         const now = Date.now();
-
-        // ✅ instant return
-        if (featuredCache && (now - featuredCacheTime < CACHEE_TTL)) {
-            console.log("⚡ Featured from cache");
-            return res.json(featuredCache);
-        }
-
-        console.log("🐢 Fetching featured from DB");
 
         const featuredGames = await Products.find(
             { featureGame: "Yes" },
@@ -176,9 +164,6 @@ router.get(
 
         // ✅ store cache
         featuredCache = featuredGames;
-        featuredCacheTime = now;
-
-        res.set("Cache-Control", "public, max-age=300, s-maxage=600");
         res.status(200).json(featuredGames);
     })
 );
@@ -313,24 +298,14 @@ router.get("/gameById/:id", errorHandling(async (req, res) => {
     res.json(game);
 }));
 
-const cache = {};
-
 router.get("/gameByTitle/:title", async (req, res) => {
     const title = req.params.title;
-
-    // ✅ return from cache
-    if (cache[title]) {
-        return res.json(cache[title]);
-    }
 
     const game = await Products.findOne({ "title.en": title }).populate("gameTags");
 
     if (!game) {
         return res.status(404).json({ message: "Game not found" });
     }
-
-    // ✅ store in cache
-    cache[title] = game;
 
     res.json(game);
 });
