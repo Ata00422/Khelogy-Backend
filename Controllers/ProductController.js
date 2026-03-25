@@ -144,6 +144,10 @@ router.post(
             metaDescription
         });
 
+        // 🔥 Refresh cache (IMPORTANT)
+        fetch("https://edge.khelogy.com/api/games/uploadedd-games?fresh=1").catch(() => { });
+        fetch("https://edge.khelogy.com/api/category/nestedCategories?fresh=1").catch(() => { });
+
         res.status(201).json({
             message: "Game uploaded successfully",
             data: uploadGame
@@ -184,7 +188,7 @@ router.get("/uploadedd-games", errorHandling(async (req, res) => {
     });
 
     // ✅ Force Cloudflare caching
-    res.set("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=3600");
+    // res.set("Cache-Control", "public, s-maxage=86400, stale-while-revalidate=3600");
     res.json(formattedGames);
 }));
 // 📁 routes/gameRoutes.js
@@ -338,6 +342,11 @@ router.delete("/delGame/:id", errorHandling(async (req, res) => {
     if (!DelGame) {
         return res.status(404).json({ message: "Game not found" });
     }
+
+    // 🔥 Refresh cache (IMPORTANT)
+    fetch("https://edge.khelogy.com/api/games/uploadedd-games?fresh=1").catch(() => { });
+    fetch("https://edge.khelogy.com/api/category/nestedCategories?fresh=1").catch(() => { });
+
     res.json({ message: "Game deleted successfully" });
 }));
 
