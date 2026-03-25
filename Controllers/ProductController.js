@@ -7,6 +7,15 @@ import uploadFile from "../Middlewares/MultiUploader.js";
 
 const router = express.Router();
 
+// 🔹 Cache refresh helper
+const refreshCache = async () => {
+    const urls = [
+        "https://edge.khelogy.com/api/games/uploadedd-games?fresh=1",
+        "https://edge.khelogy.com/api/category/nestedCategories?fresh=1"
+    ];
+    await Promise.all(urls.map(u => fetch(u).catch(() => { })));
+};
+
 router.post(
     "/uploadd-game",
     uploadFile.fields([
@@ -144,9 +153,8 @@ router.post(
             metaDescription
         });
 
-        // 🔥 Refresh cache (IMPORTANT)
-        fetch("https://edge.khelogy.com/api/games/uploadedd-games?fresh=1").catch(() => { });
-        fetch("https://edge.khelogy.com/api/category/nestedCategories?fresh=1").catch(() => { });
+        // 🔥 Refresh Worker cache
+        await refreshCache();
 
         res.status(201).json({
             message: "Game uploaded successfully",
