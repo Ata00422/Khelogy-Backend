@@ -17,8 +17,10 @@ const refreshCache = async () => {
         await fetch("https://edge.khelogy.com/api/category/nestedCategories", {
             method: "POST"
         });
+
+        console.log("✅ Cache refreshed");
     } catch (err) {
-        console.log("Cache refresh failed", err.message);
+        console.log("❌ Cache refresh failed:", err.message);
     }
 };
 
@@ -160,7 +162,7 @@ router.post(
         });
 
         // 🔥 Refresh Worker cache
-        refreshCache();
+        await refreshCache();
 
         res.status(201).json({
             message: "Game uploaded successfully",
@@ -358,7 +360,7 @@ router.delete("/delGame/:id", errorHandling(async (req, res) => {
     }
 
     // 🔥 Refresh cache (IMPORTANT)
-    refreshCache();
+    await refreshCache();
 
     res.json({ message: "Game deleted successfully" });
 }));
