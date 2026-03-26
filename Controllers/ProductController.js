@@ -161,11 +161,6 @@ router.post(
             metaDescription
         });
 
-        // 🔥 Refresh Worker cache
-        fetch("https://edge.khelogy.com/api/games/uploadedd-games", {
-            method: "POST"
-        }).catch(() => { });
-
         res.status(201).json({
             message: "Game uploaded successfully",
             data: uploadGame
@@ -360,11 +355,6 @@ router.delete("/delGame/:id", errorHandling(async (req, res) => {
     if (!DelGame) {
         return res.status(404).json({ message: "Game not found" });
     }
-
-    // 🔥 Refresh cache (IMPORTANT)
-    fetch("https://edge.khelogy.com/api/games/uploadedd-games", {
-        method: "POST"
-    }).catch(() => { });
 
     res.json({ message: "Game deleted successfully" });
 }));
