@@ -9,11 +9,17 @@ const router = express.Router();
 
 // 🔹 Cache refresh helper
 const refreshCache = async () => {
-    const urls = [
-        "https://edge.khelogy.com/api/games/uploadedd-games?fresh=1",
-        "https://edge.khelogy.com/api/category/nestedCategories?fresh=1"
-    ];
-    await Promise.all(urls.map(u => fetch(u).catch(() => { })));
+    try {
+        await fetch("https://edge.khelogy.com/api/games/uploadedd-games", {
+            method: "POST"
+        });
+
+        await fetch("https://edge.khelogy.com/api/category/nestedCategories", {
+            method: "POST"
+        });
+    } catch (err) {
+        console.log("Cache refresh failed", err.message);
+    }
 };
 
 router.post(
@@ -154,7 +160,7 @@ router.post(
         });
 
         // 🔥 Refresh Worker cache
-        await refreshCache();
+        refreshCache();
 
         res.status(201).json({
             message: "Game uploaded successfully",
@@ -352,8 +358,7 @@ router.delete("/delGame/:id", errorHandling(async (req, res) => {
     }
 
     // 🔥 Refresh cache (IMPORTANT)
-    fetch("https://edge.khelogy.com/api/games/uploadedd-games?fresh=1").catch(() => { });
-    fetch("https://edge.khelogy.com/api/category/nestedCategories?fresh=1").catch(() => { });
+    refreshCache();
 
     res.json({ message: "Game deleted successfully" });
 }));
